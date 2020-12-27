@@ -32,18 +32,6 @@ async def on_command_error(ctx, error):
     await ctx.send(f"{error}")
 
 
-# @client
-# .command()
-# async def songDL(ctx, link):
-#     await ctx.send("Downloading song")
-#     if audioDL.song_download(link)==0:
-#         await ctx.send("Here is your song")
-#         path="DL_songs/"
-#         filename=os.listdir(path)[0]
-#         await ctx.send(file=discord.File(path+filename))
-#         os.remove(path+filename)
-
-
 @client.command()
 async def songsDL(ctx, link):
     await ctx.send("Downloading song(s) (might take sometime to download, be patient.)")
