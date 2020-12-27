@@ -51,7 +51,7 @@ async def songsDL(ctx, link):
     # pc/server (works with links only)
     await ctx.send("Downloading song(s) (might take sometime to download, be patient.)")
     if audioDL.song_download(link) == 0:
-        await ctx.send(f"{ctx.author.mention}Song(s) Downloaded----Uploading now. (just a few more seconds ;) )")
+        await ctx.send(f"{ctx.author.mention}Song(s) Downloaded----Uploading now. (just a few more seconds \N{WINKING FACE} )")
         path = "DL_songs/"
         filenames = os.listdir(path)
         for filename in filenames:
@@ -94,7 +94,7 @@ async def searchDL(ctx, *, usersearch):
     # channel (takes the name/reference of the song)
     await ctx.send("Downloading song")
     if audioDL.search_download(usersearch) == 0:
-        await ctx.send(f"{ctx.author.mention} Song Downloaded----Uploading now.")
+        await ctx.send(f"{ctx.author.mention} Song Downloaded----Uploading now\N{SLIGHTLY SMILING FACE}.")
         path = "DL_songs/"
         filenames = os.listdir(path)
         for filename in filenames:
@@ -137,7 +137,7 @@ async def whosright(ctx):
 async def mood(ctx):
     mood_list = ["hppy", "sed", "bed", "cried", "hmmmmmm",
                  "wut", "yuphoria", "hungry", "angy", "meh", "mad"]
-    await ctx.send(random.choice(mood_list))
+    await ctx.send()
 
 
 client.run("NzkyMDczODM5NjEzNzA2MjYz.X-YaPw.8QJRidfmSuKsNM5e3BZ5LmtmVME")
