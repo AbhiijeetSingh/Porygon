@@ -4,6 +4,30 @@ from discord.ext import commands
 import audioDL
 import os
 import key
+import youtube_dl
+import asyncio
+
+ytdl_format_options = {
+    'format': 'bestaudio/best',
+    'outtmpl': '%(extractor)s-%(id)s-%(title)s.%(ext)s',
+    'restrictfilenames': True,
+    'noplaylist': True,
+    'nocheckcertificate': True,
+    'ignoreerrors': False,
+    'logtostderr': False,
+    'quiet': True,
+    'no_warnings': True,
+    'default_search': 'auto',
+    # bind to ipv4 since ipv6 addresses cause issues sometimes
+    'source_address': '0.0.0.0'
+}
+
+ffmpeg_options = {
+    'options': '-vn'
+}
+
+
+ytdl = youtube_dl.YoutubeDL(ytdl_format_options)
 
 intents = discord.Intents.default()
 intents.members = True
@@ -76,11 +100,16 @@ async def searchDL(ctx, *, usersearch):
         await ctx.send(f"{ctx.author.mention} Song Downloaded----Uploading now\N{SLIGHTLY SMILING FACE}.")
         path = "DL_songs/"
         filenames = os.listdir(path)
+        channel=ctx.author.voice.channel
         for filename in filenames:
-            await ctx.send(file=discord.File(path+filename))
-            print(f"{filename} uploaded")
-            os.remove(path+filename)
-            print(f"{filename} deleted successfully")
+            source=discord.FFmpegPCMAudio(path+filename)
+            await channel.connect()
+            ctx.voice_client.play(source)
+            # await ctx.send(file=discord.File(path+filename))
+            # print(f"{filename} uploaded")
+            # os.remove(path+filename)
+            # print(f"{filename} deleted successfully")
+
 
 class YTDLSource(discord.PCMVolumeTransformer):
     def __init__(self, source, *, data, volume=0.5):
@@ -103,6 +132,7 @@ class YTDLSource(discord.PCMVolumeTransformer):
         filename = data['url'] if stream else ytdl.prepare_filename(data)
         return cls(discord.FFmpegPCMAudio(filename, **ffmpeg_options), data=data)
 
+
 class StreamingCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -121,7 +151,8 @@ class StreamingCog(commands.Cog):
         """Plays a file from the local filesystem"""
 
         source = discord.PCMVolumeTransformer(discord.FFmpegPCMAudio(query))
-        ctx.voice_client.play(source, after=lambda e: print('Player error: %s' % e) if e else None)
+        ctx.voice_client.play(source, after=lambda e: print(
+            'Player error: %s' % e) if e else None)
 
         await ctx.send('Now playing: {}'.format(query))
 
@@ -131,7 +162,8 @@ class StreamingCog(commands.Cog):
 
         async with ctx.typing():
             player = await YTDLSource.from_url(url, loop=self.bot.loop)
-            ctx.voice_client.play(player, after=lambda e: print('Player error: %s' % e) if e else None)
+            ctx.voice_client.play(player, after=lambda e: print(
+                'Player error: %s' % e) if e else None)
 
         await ctx.send('Now playing: {}'.format(player.title))
 
@@ -141,7 +173,8 @@ class StreamingCog(commands.Cog):
 
         async with ctx.typing():
             player = await YTDLSource.from_url(url, loop=self.bot.loop, stream=True)
-            ctx.voice_client.play(player, after=lambda e: print('Player error: %s' % e) if e else None)
+            ctx.voice_client.play(player, after=lambda e: print(
+                'Player error: %s' % e) if e else None)
 
         await ctx.send('Now playing: {}'.format(player.title))
 
@@ -170,9 +203,11 @@ class StreamingCog(commands.Cog):
                 await ctx.author.voice.channel.connect()
             else:
                 await ctx.send("You are not connected to a voice channel.")
-                raise commands.CommandError("Author not connected to a voice channel.")
+                raise commands.CommandError(
+                    "Author not connected to a voice channel.")
         elif ctx.voice_client.is_playing():
             ctx.voice_client.stop()
+
 
 client.add_cog(StreamingCog(client))
 client.run(key.bot_key)
