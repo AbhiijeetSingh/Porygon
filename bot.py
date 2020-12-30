@@ -6,6 +6,7 @@ import audioDL
 import os
 import random
 import asyncio
+import key
 
 intents = discord.Intents.default()
 intents.members = True
@@ -85,4 +86,4 @@ async def searchDL(ctx, *, usersearch):
             print(f"{filename} deleted successfully")
 
 
-client.run("NzkyMDczODM5NjEzNzA2MjYz.X-YaPw.8QJRidfmSuKsNM5e3BZ5LmtmVME")
+client.run(key.bot_key)
