@@ -1,7 +1,3 @@
-# This is a discord bot called Porygon
-# initially created to download songs
-# but soon turned in to a tormenting bot
-# for Bhavi
 
 import discord
 from discord.ext import commands
@@ -102,42 +98,6 @@ async def searchDL(ctx, *, usersearch):
             print(f"{filename} uploaded")
             os.remove(path+filename)
             print(f"{filename} deleted successfully")
-
-
-"""-------------------------------------------------------------------------
-from this point onwards the commands are just for fun in a server.
-They don't have any meaningful purpose."""
-
-
-@client.command()
-async def flip(ctx):
-    coin_positions = ["Heads", "Tails"]
-    instance = random.choice(coin_positions)
-    await ctx.send(instance)
-
-
-@client.command()
-async def whosbad(ctx, member: discord.Member):
-    await ctx.send(f"{member.mention} is bad")
-
-
-@client.command()
-async def whosgood(ctx, member: discord.Member):
-    await ctx.send(f"{member.mention} is good")
-
-
-@client.command()
-async def whosright(ctx):
-    righters = ["Abhijeet", "Bhavi"]
-    instance = random.choice(righters)
-    await ctx.send(instance)
-
-
-@client.command()
-async def mood(ctx):
-    mood_list = ["hppy", "sed", "bed", "cried", "hmmmmmm",
-                 "wut", "yuphoria", "hungry", "angy", "meh", "mad"]
-    await ctx.send()
 
 
 client.run("NzkyMDczODM5NjEzNzA2MjYz.X-YaPw.8QJRidfmSuKsNM5e3BZ5LmtmVME")
