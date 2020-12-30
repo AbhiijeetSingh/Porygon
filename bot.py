@@ -5,6 +5,7 @@ import time
 import audioDL
 import os
 import random
+import asyncio
 
 intents = discord.Intents.default()
 intents.members = True
@@ -64,22 +65,6 @@ async def clear(ctx, amount: int = 2):
     await ctx.channel.purge(limit=amount)
     await ctx.send(f"{amount} message(s) cleared")
     print(f"{amount} message(s) cleared")
-
-
-@client.command()
-async def trouble(ctx, member: discord.Member):
-    # Is a functions to trouble discord guild
-    # members only. sends them DMs very frequently
-    # to annoy them.
-    if member is not None:
-        channel = member.dm_channel
-        if channel is None:
-            channel = await member.create_dm()
-        for iterations in range(10):
-            await ctx.send(f"{member.mention} are you annoyed yet")
-            await channel.send("are you annoyed yet!?")
-            print(f"sent annoyance to {member.mention}")
-            time.sleep(10)
 
 
 @client.command()
