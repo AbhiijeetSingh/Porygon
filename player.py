@@ -5,6 +5,7 @@ class Player(object):
     def __init__(self, queue):
         self.queue = queue
         self.skip = False
+        self.voice_client = None
 
     async def start(self):
         while True:
@@ -50,4 +51,9 @@ class Player(object):
         await self.queue.put(item)
 
     def get_queue_length(self):
-        return self.queue.qsize() + 1 if self.voice_client.is_playing() else self.queue.qsize()
+        q_size = self.queue.qsize()
+        if self.voice_client:
+            return q_size + 1 if self.voice_client.is_playing() else q_size
+        else:
+            return q_size
+            
