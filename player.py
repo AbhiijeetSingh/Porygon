@@ -50,4 +50,4 @@ class Player(object):
         await self.queue.put(item)
 
     def get_queue_length(self):
-        return self.queue.qsize()
+        return self.queue.qsize() + 1 if self.voice_client.is_playing() else self.queue.qsize()
