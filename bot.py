@@ -123,6 +123,7 @@ class MusicStreamingCog(commands.Cog):
     @commands.command()
     async def play(self, ctx, *query):
         query = " ".join(query)
+        print(query)
         channel = ctx.author.voice.channel
         
         if channel is None:
@@ -164,6 +165,14 @@ class MusicStreamingCog(commands.Cog):
         else:
             async with ctx.typing():
                 await ctx.send("You need to play something first.")
+
+    @commands.command()
+    async def disconnect(self, ctx):
+        if ctx.guild.id in self.voice_clients:
+            self.voice_clients.get(ctx.guild.id).disconnect()
+        else:
+            pass
+
 
 client.add_cog(MusicStreamingCog(client))
 client.run(key.bot_key)
