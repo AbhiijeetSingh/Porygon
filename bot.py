@@ -56,7 +56,7 @@ class MusicStreamingCog(commands.Cog):
             voice_client = voice_client_dict or await channel.connect()
             self.voice_clients[ctx.guild.id] = voice_client
             queue_length = self.players[ctx.guild.id].get_queue_length()
-            message_prefix = "Now playing" if queue_length < 1 else "Added to queue"
+            message_prefix = "Now playing" if queue_length == 0 else "Added to queue"
 
             info = await self.audio_repo.get_info(query)
 
@@ -64,7 +64,7 @@ class MusicStreamingCog(commands.Cog):
                 title = message_prefix,
                 description = info['entries'][0]['title'],
                 color=0x00DAFF
-                ).set_image(info['entries'][0]['thumbnail'])
+                )#.set_image(info['entries'][0]['thumbnail'])
             
             async with ctx.typing():
                 await ctx.send(embed = embed)
