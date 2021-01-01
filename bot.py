@@ -47,7 +47,7 @@ class MusicStreamingCog(commands.Cog):
                 info = await self.audio_repo.get_info(query)
                 await ctx.send(f"Now playing {info['entries'][0]['title']}")
             
-            source = self.audio_repo.get(info)
+            source = await self.audio_repo.get(info)
             self.voice_clients[ctx.guild.id] = voice_client
             voice_client.play(source)
 
