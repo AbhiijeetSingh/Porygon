@@ -1,7 +1,11 @@
 from concurrent.futures.thread import ThreadPoolExecutor
+
+import discord
+from player import Player
 from discord.ext import commands
 from audio_repo import AudioRepo
 import key
+import asyncio
 
 client = commands.Bot(command_prefix=">")
 
@@ -30,6 +34,13 @@ class MusicStreamingCog(commands.Cog):
         self.bot = bot
         self.voice_clients = dict()
         self.audio_repo = AudioRepo()
+        self.players = dict()
+
+    @commands.Cog.listener()
+    async def on_ready(self):
+        async for guild in self.bot.fetch_guilds():
+            self.players[guild.id] = Player(asyncio.Queue())
+            asyncio.create_task(self.players[guild.id].start())
 
     @commands.command()
     async def play(self, ctx, *query):
@@ -41,39 +52,47 @@ class MusicStreamingCog(commands.Cog):
                 await ctx.send("Please join a voice channel first.")
 
         else:
-            voice_client = await channel.connect()
-
-            async with ctx.typing():
-                info = await self.audio_repo.get_info(query)
-                await ctx.send(f"Now playing {info['entries'][0]['title']}")
-            
-            source = await self.audio_repo.get(info)
+            voice_client_dict = self.voice_clients.get(ctx.guild.id, None)
+            voice_client = voice_client_dict or await channel.connect()
             self.voice_clients[ctx.guild.id] = voice_client
-            voice_client.play(source)
+            queue_length = self.players[ctx.guild.id].get_queue_length()
+            message_prefix = "Now playing" if queue_length < 1 else "Added to queue"
+
+            info = await self.audio_repo.get_info(query)
+
+            embed = discord.Embed(
+                title = message_prefix,
+                description = info['entries'][0]['title'],
+                color=0x00DAFF
+                ).set_image(info['entries'][0]['thumbnail'])
+            
+            async with ctx.typing():
+                await ctx.send(embed = embed)
+            source = await self.audio_repo.get(info)
+
+            await self.players[ctx.guild.id].add_to_queue((source, voice_client))
 
     @commands.command()
     async def pause(self, ctx):
-        if ctx.guild.id in self.voice_clients:
-            self.voice_clients.get(ctx.guild.id).pause()
-        else:
+        if not await self.players[ctx.guild.id].pause():
             async with ctx.typing():
                 await ctx.send("You need to play something first.")
 
     @commands.command()
     async def resume(self, ctx):
-        if ctx.guild.id in self.voice_clients:
-            self.voice_clients.get(ctx.guild.id).resume()
-        else:
+        if not await self.players[ctx.guild.id].resume():
             async with ctx.typing():
                 await ctx.send("You need to play something first.")
 
     @commands.command()
-    async def stop(self, ctx):
-        if ctx.guild.id in self.voice_clients:
-            await self.voice_clients.get(ctx.guild.id).disconnect()
-        else:
-            pass
+    async def disconnect(self, ctx):
+        if not await self.players[ctx.guild.id].disconnect():
+            await ctx.send("Not connected to any VC.")
 
-if __name__ =="__main__":
+    @commands.command()
+    async def next(self, ctx):
+        self.players[ctx.guild.id].next()
+
+if __name__ == "__main__":
     client.add_cog(MusicStreamingCog(client))
     client.run(key.bot_key)
