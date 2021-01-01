@@ -64,7 +64,7 @@ class MusicStreamingCog(commands.Cog):
                 title = message_prefix,
                 description = info['entries'][0]['title'],
                 color=0x00DAFF
-                ).add_field("Requested by", ctx.author.mention)
+                ).add_field(name = "Requested by", value = ctx.author.mention)
             
             async with ctx.typing():
                 await ctx.send(embed = embed)
