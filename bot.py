@@ -8,7 +8,6 @@ from audio_repo import AudioRepo
 import key
 import asyncio
 from youtube_dl import YoutubeDL
-from concurrent.futures import ProcessPoolExecutor
 
 client = commands.Bot(command_prefix=">")
 
@@ -80,6 +79,6 @@ class MusicStreamingCog(commands.Cog):
         else:
             pass
 
-
-client.add_cog(MusicStreamingCog(client))
-client.run(key.bot_key)
+if __name__ =="__main__":
+    client.add_cog(MusicStreamingCog(client))
+    client.run(key.bot_key)
