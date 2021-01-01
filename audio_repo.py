@@ -38,8 +38,11 @@ class AudioRepo(object):
         except FileExistsError:
             pass
 
-    async def get(self, query):
+    async def get_info(self, query):
         info = await extract_info_from_yt(query)
+        return info
+
+    async def get(self, info):
         id = info['entries'][0]['id']
         if is_cached(id):
             pass

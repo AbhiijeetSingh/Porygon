@@ -1,13 +1,7 @@
 from concurrent.futures.thread import ThreadPoolExecutor
-import subprocess
-import discord
-from discord import file
 from discord.ext import commands
-from discord.ext.commands.core import command
 from audio_repo import AudioRepo
 import key
-import asyncio
-from youtube_dl import YoutubeDL
 
 client = commands.Bot(command_prefix=">")
 
@@ -50,9 +44,10 @@ class MusicStreamingCog(commands.Cog):
             voice_client = await channel.connect()
 
             async with ctx.typing():
-                await ctx.send(f"Now playing")
-
-            source = await self.audio_repo.get(query)
+                info = await self.audio_repo.get_info(query)
+                await ctx.send(f"Now playing {info['entries'][0]['title']}")
+            
+            source = self.audio_repo.get(info)
             self.voice_clients[ctx.guild.id] = voice_client
             voice_client.play(source)
 
