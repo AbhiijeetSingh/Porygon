@@ -8,12 +8,12 @@ class Player(object):
         self.queue = queue
         self.skip = False
         self.voice_client = None
-        self.loop = False
+        self._loop = False
 
     async def start(self):
         while True:
             song = await self.queue.get()
-            if self.loop:
+            if self._loop:
                 await self.queue.put(song)
             self.voice_client = song.ctx.voice_client
 
@@ -40,12 +40,12 @@ class Player(object):
     async def pause(self, ctx):
         if self.voice_client.is_playing():
             self.voice_client.pause()
-            await ctx.message.add_reaction('\N{PAUSE BUTTON}')
+            await ctx.message.add_reaction('\U000023F8')
 
     async def resume(self, ctx):
         if not self.voice_client.is_playing():
             self.voice_client.resume()
-            await ctx.message.add_reaction('\N{PLAY BUTTON}')
+            await ctx.message.add_reaction('\U000025B6')
         else:
             await ctx.send("Nothing is being played")
 
@@ -57,14 +57,13 @@ class Player(object):
             for _ in range(self.queue.qsize()):
                 self.queue.get_nowait()
             await self.voice_client.disconnect()
-            await ctx.message.add_reaction('\N{ELECTRIC PLUG}')
-            #await ctx.message.add_reaction('\N{WAVING HAND}')
+            await ctx.message.add_reaction('\U0001F50C')
         else:
             await ctx.send("Porygon is not connnected")
 
     async def next(self, ctx):
         self.skip = True
-        await ctx.message.add_reaction('\N{NEXT TRACK BUTTION}')
+        await ctx.message.add_reaction('\U000023ED')
 
     async def add_to_queue(self, item):
         await self.queue.put(item)
@@ -76,14 +75,14 @@ class Player(object):
         else:
             return q_size
 
-    async def loop(self, ctx):
+    async def loop_queue(self, ctx):
         # Toggles queue looping.
-        self.loop = not self.loop
+        self._loop = not self._loop
 
-        title = "Now looping." if self.loop else "Looping now disabled."
+        title = "Now looping." if self._loop else "Looping now disabled."
         embed = discord.Embed(
             title=title,
             color=0x00DAFF
         )
-        # await ctx.message.add_reaction("\N{REPEAT BUTTON}")
+        await ctx.message.add_reaction("\U0001F501")
         await ctx.send(embed=embed)

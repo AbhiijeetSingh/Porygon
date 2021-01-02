@@ -5,7 +5,7 @@ from audio_repo import AudioRepo
 import key
 import asyncio
 from song import Song
-from aiohttp import ClientSessiion
+from aiohttp import ClientSession
 
 client = commands.Bot(command_prefix=">")
 
@@ -27,11 +27,83 @@ async def on_member_remove(member):
     # passes the name of the member that left the server
     print(f"{member} has left the server")
 
+class APIAccessBase(object):
+    def __init__(self):
+        pass
+    
+    async def get_url(self, endpoint_url, headers={}):
+        async with ClientSession(headers=headers) as session:
+            resp = await session.get(self.base_url+endpoint_url)
+            json = await resp.json()
+            return json["url"]
 
-class NekoLifeCog(object):
+    async def get(self, url, headers={}):
+        async with ClientSession(headers=headers) as session:
+            resp = await session.get(url)
+            return resp
+ 
+class WaifuPicsCog(commands.Cog, APIAccessBase):
+    def __init__(self, bot) -> None:
+        self.bot = bot
+        self.SFW = {
+            'waifu': 'sfw/waifu',
+            'neko': 'sfw/neko',
+            'shinobu': 'sfw/shinobu',
+            'megumin': 'sfw/megumin',
+            'bully': 'sfw/bully',
+            'cuddle': 'sfw/cuddle',
+            'cry': 'sfw/cry',
+            'hug': 'sfw/hug',
+            'awoo': 'sfw/awoo',
+            'kiss': 'sfw/kiss',
+            'lick': 'sfw/lick',
+            'pat': 'sfw/pat',
+            'smug': 'sfw/smug',
+            'bonk': 'sfw/bonk',
+            'yeet': 'sfw/yeet',
+            'blush': 'sfw/blush',
+            'smile': 'sfw/smile',
+            'wave': 'sfw/wave',
+            'highfive': 'sfw/highfive',
+            'handhold': 'sfw/handhold',
+            'nom': 'sfw/nom',
+            'bite': 'sfw/bite',
+            'glomp': 'sfw/glomp',
+            'kill': 'sfw/kill',
+            'slap': 'sfw/slap',
+            'happy': 'sfw/happy',
+            'wink': 'sfw/wink',
+            'poke': 'sfw/poke',
+            'dance': 'sfw/dance',
+            'cringe': 'sfw/cringe',
+            'blush': 'sfw/blush'
+        }
+        self.NSFW = {
+            'waifu': 'nsfw/waifu',
+            'neko': 'nsfw/neko',
+            'trap': 'nsfw/trap',
+            'blowjob': 'nsfw/blowjob'
+        }
+
+    @commands.command()
+    async def waifu(self, ctx, tag=None):
+        endpoint_url = self.SFW.get(tag, None) or "sfw/waifu"
+        image_url = await self.get_url(endpoint_url)
+        await ctx.send(embed = discord.Embed().set_image(url=image_url))
+
+    @commands.command()
+    async def waifuLewd(self, ctx, tag=None):
+        endpoint_url = self.NSFW.get(tag, None) or "nsfw/waifu"
+        image_url = await self.get_url(endpoint_url)
+        await ctx.send(embed = discord.Embed().set_image(url=image_url))
+
+    @property
+    def base_url(self):
+        return "https://waifu.pics/api/"
+
+class NekoLifeCog(commands.Cog, APIAccessBase):
     def __init__(self, bot):
         self.bot = bot
-        self.BASE_URL = "https://nekos.life/api/v2/"
         self.SFW = {
             "tickle": "/img/tickle",
             "slap": "/img/slap",
@@ -105,20 +177,21 @@ class NekoLifeCog(object):
             "gasm": "/img/gasm"
         }
 
-    async def get(self, endpoint):
-        async with ClientSessiion() as session:
-            resp = await session.get(f"{self.BASE_URL}{endpoint_url}")
-            json = await resp.json()
-            if 'url' not in json.keys():
-                raise Exception
-            image_resp = await session.get(json['url'])
-
     @commands.command()
     async def neko(self, ctx, tag=None):
-        endpoint_url = self.SFW.get(tag, None) or "img/neko" 
-        async with ClientSessiion() as session:
-            resp = await session.get(f"{self.BASE_URL}{endpoint_url}")
-            json = await resp.json()
+        endpoint_url = self.SFW.get(tag, None) or "img/neko"
+        image_url = await self.get_url(endpoint_url)
+        await ctx.send(embed = discord.Embed().set_image(url=image_url))
+    
+    @commands.command()
+    async def nekoLewd(self, ctx, tag=None):
+        endpoint_url = self.NSFW.get(tag, None) or "img/lewd"
+        image_url = await self.get_url(endpoint_url)
+        await ctx.send(embed = discord.Embed().set_image(url=image_url))
+
+    @property
+    def base_url(self):
+        return "https://nekos.life/api/v2/"
 
 class MusicStreamingCog(commands.Cog):
     def __init__(self, bot):
@@ -135,7 +208,6 @@ class MusicStreamingCog(commands.Cog):
     @commands.command()
     async def play(self, ctx, *query):
         query = " ".join(query)
-        voice_client = ctx.voice_client
 
         info = await self.audio_repo.get_info(query)
         source = await self.audio_repo.get(info)
@@ -158,9 +230,6 @@ class MusicStreamingCog(commands.Cog):
 
         await self.players[ctx.guild.id].add_to_queue(song)
 
-            # async with ctx.typing():
-            #     await ctx.send(embed=embed)
-
     @play.before_invoke
     async def ensure_connected_voice_client(self, ctx):
         channel = ctx.author.voice.channel if ctx.author.voice else None
@@ -174,27 +243,30 @@ class MusicStreamingCog(commands.Cog):
             ctx.send("Not connnected to a VC, please connect to a VC")
             raise commands.CommandError("Author not connected to VC.")
 
-    @commands.command()
+    @commands.command(alias=['ps'])
     async def pause(self, ctx):
         await self.players[ctx.guild.id].pause(ctx)
 
-    @commands.command()
+    @commands.command(alias=['r'])
     async def resume(self, ctx):
         await self.players[ctx.guild.id].resume(ctx)
 
-    @commands.command()
+    @commands.command(alias=['dis'])
     async def disconnect(self, ctx):
         await self.players[ctx.guild.id].disconnect(ctx)
 
-    @commands.command()
+    @commands.command(alias=['n'])
     async def next(self, ctx):
-        self.players[ctx.guild.id].next(ctx)
+        await self.players[ctx.guild.id].next(ctx)
     
     @commands.command()
     async def loop(self, ctx):
-        self.players[ctx.guild.id].loop(ctx)
+        await self.players[ctx.guild.id].loop_queue(ctx)
 
 
 if __name__ == "__main__":
     client.add_cog(MusicStreamingCog(client))
+    client.add_cog(NekoLifeCog(client))
+    client.add_cog(WaifuPicsCog(client))
     client.run(key.bot_key)
+
