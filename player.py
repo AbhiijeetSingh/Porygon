@@ -53,6 +53,8 @@ class Player(object):
         # the it disconnects and returns True, otherwise
         # returns False
         if self.voice_client.is_connected():
+            for _ in range(self.queue.qsize()):
+                self.queue.get_nowait()
             await self.voice_client.disconnect()
             return True
         else:

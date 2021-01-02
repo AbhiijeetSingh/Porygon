@@ -76,7 +76,7 @@ class MusicStreamingCog(commands.Cog):
             ).set_image(url=info['entries'][0]['thumbnail'])
 
             if self.players[ctx.guild.id].get_queue_length() != 0:
-                ctx.send(embed=embed)
+                await ctx.send(embed=embed)
 
             await self.players[ctx.guild.id].add_to_queue(song)
 
