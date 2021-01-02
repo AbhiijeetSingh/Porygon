@@ -1,14 +1,12 @@
-from concurrent.futures.thread import ThreadPoolExecutor
-
 import discord
 from player import Player
 from discord.ext import commands
 from audio_repo import AudioRepo
 import key
 import asyncio
+from song import Song
 
 client = commands.Bot(command_prefix=">")
-
 
 @client.event
 async def on_ready():
@@ -55,22 +53,35 @@ class MusicStreamingCog(commands.Cog):
             voice_client_dict = self.voice_clients.get(ctx.guild.id, None)
             voice_client = voice_client_dict or await channel.connect()
             self.voice_clients[ctx.guild.id] = voice_client
-            queue_length = self.players[ctx.guild.id].get_queue_length()
-            message_prefix = "Now playing" if queue_length == 0 else "Added to queue"
+
+            # queue_length = self.players[ctx.guild.id].get_queue_length()
+            # message_prefix = "Now playing" if queue_length == 0 else "Added to queue"
 
             info = await self.audio_repo.get_info(query)
-
-            embed = discord.Embed(
-                title = message_prefix,
-                description = info['entries'][0]['title'],
-                color=0x00DAFF
-                ).add_field(name = "Requested by", value = ctx.author.mention)
-            
-            async with ctx.typing():
-                await ctx.send(embed = embed)
             source = await self.audio_repo.get(info)
 
-            await self.players[ctx.guild.id].add_to_queue((source, voice_client))
+            title = info['entries'][0]['title']
+            song = Song(
+                voice_client=voice_client,
+                title=title,
+                source=source,
+                send_func=ctx.send,
+                requested_by_mention=ctx.author.mention
+            )
+
+            embed = discord.Embed(
+                title="Added to queue",
+                description=title,
+                color=0x00DAFF                
+            ).set_image(url=info['entries'][0]['thumbnail'])
+
+            if self.players[ctx.guild.id].get_queue_length() != 0:
+                ctx.send(embed=embed)
+
+            await self.players[ctx.guild.id].add_to_queue(song)
+
+            # async with ctx.typing():
+            #     await ctx.send(embed=embed)
 
     @commands.command()
     async def pause(self, ctx):
@@ -92,6 +103,7 @@ class MusicStreamingCog(commands.Cog):
     @commands.command()
     async def next(self, ctx):
         self.players[ctx.guild.id].next()
+
 
 if __name__ == "__main__":
     client.add_cog(MusicStreamingCog(client))

@@ -1,5 +1,7 @@
 import asyncio
 
+import discord
+
 
 class Player(object):
     def __init__(self, queue):
@@ -9,11 +11,23 @@ class Player(object):
 
     async def start(self):
         while True:
-            source, self.voice_client = await self.queue.get()
+            song = await self.queue.get()
+            self.voice_client = song.voice_client
 
-            self.voice_client.stop() if self.voice_client.is_playing() or self.voice_client.is_paused() else None
-            
-            self.voice_client.play(source)
+            self.voice_client.stop() if self.voice_client.is_playing(
+            ) or self.voice_client.is_paused() else None
+
+            embed = discord.Embed(
+                title="Now playing",
+                description=song.title,
+                color=0x00DAFF
+            ).add_field(name="Requested by", value=song.requested_by_mention)
+
+            await song.send_func(
+                embed=embed
+            )
+
+            self.voice_client.play(song.source)
             while self.voice_client.is_playing() or self.voice_client.is_paused():
                 if self.skip:
                     self.skip = False
@@ -56,4 +70,3 @@ class Player(object):
             return q_size + 1 if self.voice_client.is_playing() else q_size
         else:
             return q_size
-            

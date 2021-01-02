@@ -26,9 +26,9 @@ def is_cached(filename):
 async def _download(webpage_url, filename):
     with ThreadPoolExecutor(1) as pool:
         loop = asyncio.get_event_loop()
-        await loop.run_in_executor(pool, subprocess.run, 
-            f'youtube-dl -f bestaudio --output {os.path.join(BASE_PATH, filename)} {webpage_url}'
-        )
+        await loop.run_in_executor(pool, subprocess.run,
+                                   f'youtube-dl -f bestaudio --output {os.path.join(BASE_PATH, filename)} {webpage_url}'
+                                   )
 
 
 class AudioRepo(object):
