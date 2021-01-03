@@ -1,4 +1,5 @@
 import asyncio
+from os import removedirs
 import discord
 
 
@@ -28,14 +29,14 @@ class Player(object):
             )
             self.voice_client.play(discord.FFmpegPCMAudio(source=song.source))
 
-            if self._loop:
-                await self.queue.put(song)
-
             while self.voice_client.is_playing() or self.voice_client.is_paused():
                 if self.skip:
                     self.skip = False
                     break
                 await asyncio.sleep(0.5)
+
+            if self._loop:
+                await self.queue.put(song)
 
     async def pause(self, ctx):
         if self.voice_client.is_playing():
@@ -65,7 +66,7 @@ class Player(object):
         self.skip = True
         await ctx.message.add_reaction('\U000023ED')
 
-    async def add_to_queue(self, item):
+    async def enqueue(self, item):
         await self.queue.put(item)
 
     def get_queue_length(self):
@@ -101,4 +102,27 @@ class Player(object):
             color=0x00DAFF
         )
         await ctx.message.add_reaction("\U0001F4C3")
+        await ctx.send(embed=embed)
+
+    async def dequeue(self, ctx, title):
+        for _ in range(self.queue.qsize()):
+            song = await self.queue.get()
+            if song.title != title:
+                await self.queue.put(song)
+            else:
+                embed = discord.Embed(
+                    title="Song removed",
+                    description=title,
+                    color=0xFF0017
+                )
+                await ctx.send(embed=embed)
+
+    async def clear_queue(self, ctx):
+        for _ in range(self.queue.qsize()):
+            self.queue.get_nowait()
+        embed = discord.Embed(
+            title="Queue cleared",
+            description='All songs removed',
+            color=0xFF0017
+        )
         await ctx.send(embed=embed)

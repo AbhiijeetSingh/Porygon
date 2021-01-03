@@ -162,7 +162,7 @@ class MusicStreamingCog(commands.Cog):
         if self.players[ctx.guild.id].get_queue_length() != 0:
             await ctx.send(embed=embed)
 
-        await self.players[ctx.guild.id].add_to_queue(song)
+        await self.players[ctx.guild.id].enqueue(song)
 
     @play.before_invoke
     async def ensure_connected_voice_client(self, ctx):
@@ -200,8 +200,17 @@ class MusicStreamingCog(commands.Cog):
     @commands.command(aliases=['q'])
     async def queue(self, ctx):
         await self.players[ctx.guild.id].queue_list(ctx)
-
     
+    @commands.command(aliases=['dq'])
+    async def dequeue(self, ctx, *query):
+        query = " ".join(query)
+        info = await self.audio_repo.get_info(query)
+        title= info['entries'][0]['title']
+        await self.players[ctx.guild.id].dequeue(ctx, title)
+    
+    @commands.command(aliases = ['cq'])
+    async def clearq(self, ctx):
+        await self.players[ctx.guild.id].clear_queue(ctx)
 
 
 if __name__ == "__main__":
