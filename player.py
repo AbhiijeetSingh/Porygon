@@ -86,3 +86,20 @@ class Player(object):
         )
         await ctx.message.add_reaction("\U0001F501")
         await ctx.send(embed=embed)
+
+    async def queue_list(self, ctx):
+        song_names=''
+        
+        for index in range(self.queue.qsize()):
+            song = await self.queue.get()
+            song_names+=f"{index+1}. {song.title}\n"
+            await self.queue.put(song)
+        
+        embed = discord.Embed(
+            title="Queue",
+            description=song_names,
+            color = 0x00DAFF
+        )
+        await ctx.message.add_reaction("\U0001F4C3")
+        await ctx.send(embed=embed)
+

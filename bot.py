@@ -193,9 +193,15 @@ class MusicStreamingCog(commands.Cog):
     async def next(self, ctx):
         await self.players[ctx.guild.id].next(ctx)
 
-    @commands.command()
+    @commands.command(aliases=['lp'])
     async def loop(self, ctx):
         await self.players[ctx.guild.id].loop_queue(ctx)
+    
+    @commands.command(aliases=['q'])
+    async def queue(self, ctx):
+        await self.players[ctx.guild.id].queue_list(ctx)
+
+    
 
 
 if __name__ == "__main__":
