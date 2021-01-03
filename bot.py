@@ -9,11 +9,17 @@ from aiohttp import ClientSession
 
 client = commands.Bot(command_prefix=">")
 
+
 @client.event
 async def on_ready():
     # passes the "ready" comment in the terminal
     # on starting
     print("Porygon is ready")
+    activity_type = discord.ActivityType.watching
+    activity = discord.Activity(
+        name="hentai",
+        type=activity_type)
+    await client.change_presence(activity=activity)
 
 
 @client.event
@@ -27,10 +33,38 @@ async def on_member_remove(member):
     # passes the name of the member that left the server
     print(f"{member} has left the server")
 
+
+class MiscCog(commands.Cog):
+    def __init__(self, bot) -> None:
+        self.bot = bot
+
+    @commands.command(name="clearById", aliases=['cbid'])
+    async def clear_by_id(self, ctx, id):
+        channel = ctx.channel
+        message = await channel.fetch_message(id)
+        await message.delete()
+        embed = discord.Embed(
+            description=f"Deleted message with ID ...{id[-6:]}.",
+            color=0xFF0017)
+        await ctx.send(embed=embed)
+        
+    @commands.command()
+    async def clear(self, ctx, limit: int = 2):
+        # is used to clear the texts/messages sent
+        # in the discord channel.
+        channel = ctx.channel
+        deleted = await channel.purge(
+            limit=limit, 
+            check=lambda m: m.author.id == self.bot.user.id)
+        embed = discord.Embed(
+            description=f"Deleted {deleted} message(s).",
+            color=0xFF0017)
+        await ctx.send(embed=embed)
+
 class APIAccessBase(object):
     def __init__(self):
         pass
-    
+
     async def get_url(self, endpoint_url, headers={}):
         async with ClientSession(headers=headers) as session:
             resp = await session.get(self.base_url+endpoint_url)
@@ -41,7 +75,7 @@ class APIAccessBase(object):
         async with ClientSession(headers=headers) as session:
             resp = await session.get(url)
             return resp
- 
+
 class WaifuPicsCog(commands.Cog, APIAccessBase):
     def __init__(self, bot) -> None:
         self.bot = bot
@@ -89,17 +123,18 @@ class WaifuPicsCog(commands.Cog, APIAccessBase):
     async def waifu(self, ctx, tag=None):
         endpoint_url = self.SFW.get(tag, None) or "sfw/waifu"
         image_url = await self.get_url(endpoint_url)
-        await ctx.send(embed = discord.Embed().set_image(url=image_url))
+        await ctx.send(embed=discord.Embed().set_image(url=image_url))
 
     @commands.command()
     async def waifuLewd(self, ctx, tag=None):
         endpoint_url = self.NSFW.get(tag, None) or "nsfw/waifu"
         image_url = await self.get_url(endpoint_url)
-        await ctx.send(embed = discord.Embed().set_image(url=image_url))
+        await ctx.send(embed=discord.Embed().set_image(url=image_url))
 
     @property
     def base_url(self):
         return "https://waifu.pics/api/"
+
 
 class NekoLifeCog(commands.Cog, APIAccessBase):
     def __init__(self, bot):
@@ -181,17 +216,18 @@ class NekoLifeCog(commands.Cog, APIAccessBase):
     async def neko(self, ctx, tag=None):
         endpoint_url = self.SFW.get(tag, None) or "img/neko"
         image_url = await self.get_url(endpoint_url)
-        await ctx.send(embed = discord.Embed().set_image(url=image_url))
-    
+        await ctx.send(embed=discord.Embed().set_image(url=image_url))
+
     @commands.command()
     async def nekoLewd(self, ctx, tag=None):
         endpoint_url = self.NSFW.get(tag, None) or "img/lewd"
         image_url = await self.get_url(endpoint_url)
-        await ctx.send(embed = discord.Embed().set_image(url=image_url))
+        await ctx.send(embed=discord.Embed().set_image(url=image_url))
 
     @property
     def base_url(self):
         return "https://nekos.life/api/v2/"
+
 
 class MusicStreamingCog(commands.Cog):
     def __init__(self, bot):
@@ -222,7 +258,7 @@ class MusicStreamingCog(commands.Cog):
         embed = discord.Embed(
             title="Added to queue",
             description=title,
-            color=0x00DAFF                
+            color=0x00DAFF
         ).set_thumbnail(url=info['entries'][0]['thumbnail'])
 
         if self.players[ctx.guild.id].get_queue_length() != 0:
@@ -238,7 +274,7 @@ class MusicStreamingCog(commands.Cog):
                 await channel.connect()
             if channel.id != ctx.voice_client.channel.id:
                 await ctx.send("Bot is in another channel.")
-                raise commands.CommandError("Bot is in another channel.") 
+                raise commands.CommandError("Bot is in another channel.")
         else:
             ctx.send("Not connnected to a VC, please connect to a VC")
             raise commands.CommandError("Author not connected to VC.")
@@ -258,7 +294,7 @@ class MusicStreamingCog(commands.Cog):
     @commands.command(alias=['n'])
     async def next(self, ctx):
         await self.players[ctx.guild.id].next(ctx)
-    
+
     @commands.command()
     async def loop(self, ctx):
         await self.players[ctx.guild.id].loop_queue(ctx)
@@ -268,5 +304,5 @@ if __name__ == "__main__":
     client.add_cog(MusicStreamingCog(client))
     client.add_cog(NekoLifeCog(client))
     client.add_cog(WaifuPicsCog(client))
+    client.add_cog(MiscCog(client))
     client.run(key.bot_key)
-
