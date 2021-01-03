@@ -1,11 +1,11 @@
-# entries 0 webpage_url
-# entries 0 id
+# To download the get the
+# song query passed.
+
 import subprocess
 import os
 from concurrent.futures import ThreadPoolExecutor
 import asyncio
 from youtube_dl import YoutubeDL
-import discord
 
 
 BASE_PATH = "PorygonSongs"
@@ -48,4 +48,4 @@ class AudioRepo(object):
             pass
         else:
             await _download(info['entries'][0]['webpage_url'], info['entries'][0]['id'])
-        return discord.FFmpegPCMAudio(source=os.path.join(BASE_PATH, id))
+        return os.path.join(BASE_PATH, id)

@@ -5,7 +5,7 @@ import discord
 class Song(object):
     def __init__(self,
                  title: str,
-                 source: discord.FFmpegPCMAudio,
+                 source: str,
                  context: discord.ext.commands.Context,
                  ) -> None:
 

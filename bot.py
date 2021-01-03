@@ -6,6 +6,7 @@ import key
 import asyncio
 from song import Song
 from aiohttp import ClientSession
+import endpoints
 
 client = commands.Bot(command_prefix=">")
 
@@ -17,7 +18,7 @@ async def on_ready():
     print("Porygon is ready")
     activity_type = discord.ActivityType.watching
     activity = discord.Activity(
-        name="hentai",
+        name="Hmmmmm",
         type=activity_type)
     await client.change_presence(activity=activity)
 
@@ -40,6 +41,8 @@ class MiscCog(commands.Cog):
 
     @commands.command(name="clearById", aliases=['cbid'])
     async def clear_by_id(self, ctx, id):
+        # Deletes specific text/message
+        # based on the message ID.
         channel = ctx.channel
         message = await channel.fetch_message(id)
         await message.delete()
@@ -51,7 +54,7 @@ class MiscCog(commands.Cog):
     @commands.command()
     async def clear(self, ctx, limit: int = 2):
         # is used to clear the texts/messages sent
-        # in the discord channel.
+        # by the bot in the discord channel.
         channel = ctx.channel
         deleted = await channel.purge(
             limit=limit,
@@ -81,45 +84,8 @@ class APIAccessBase(object):
 class WaifuPicsCog(commands.Cog, APIAccessBase):
     def __init__(self, bot) -> None:
         self.bot = bot
-        self.SFW = {
-            'waifu': 'sfw/waifu',
-            'neko': 'sfw/neko',
-            'shinobu': 'sfw/shinobu',
-            'megumin': 'sfw/megumin',
-            'bully': 'sfw/bully',
-            'cuddle': 'sfw/cuddle',
-            'cry': 'sfw/cry',
-            'hug': 'sfw/hug',
-            'awoo': 'sfw/awoo',
-            'kiss': 'sfw/kiss',
-            'lick': 'sfw/lick',
-            'pat': 'sfw/pat',
-            'smug': 'sfw/smug',
-            'bonk': 'sfw/bonk',
-            'yeet': 'sfw/yeet',
-            'blush': 'sfw/blush',
-            'smile': 'sfw/smile',
-            'wave': 'sfw/wave',
-            'highfive': 'sfw/highfive',
-            'handhold': 'sfw/handhold',
-            'nom': 'sfw/nom',
-            'bite': 'sfw/bite',
-            'glomp': 'sfw/glomp',
-            'kill': 'sfw/kill',
-            'slap': 'sfw/slap',
-            'happy': 'sfw/happy',
-            'wink': 'sfw/wink',
-            'poke': 'sfw/poke',
-            'dance': 'sfw/dance',
-            'cringe': 'sfw/cringe',
-            'blush': 'sfw/blush'
-        }
-        self.NSFW = {
-            'waifu': 'nsfw/waifu',
-            'neko': 'nsfw/neko',
-            'trap': 'nsfw/trap',
-            'blowjob': 'nsfw/blowjob'
-        }
+        self.SFW = endpoints.waifu_sfw
+        self.NSFW = endpoints.waifu_nsfw
 
     @commands.command()
     async def waifu(self, ctx, tag=None):
@@ -141,78 +107,8 @@ class WaifuPicsCog(commands.Cog, APIAccessBase):
 class NekoLifeCog(commands.Cog, APIAccessBase):
     def __init__(self, bot):
         self.bot = bot
-        self.SFW = {
-            "tickle": "/img/tickle",
-            "slap": "/img/slap",
-            "poke": "/img/poke",
-            "pat": "/img/pat",
-            "neko": "/img/neko",
-            "meow": "/img/meow",
-            "lizard": "/img/lizard",
-            "kiss": "/img/kiss",
-            "hug": "/img/hug",
-            "foxGirl": "/img/fox_girl",
-            "feed": "/img/feed",
-            "cuddle": "/img/cuddle",
-            "why": "/why",
-            "catText": "/cat",
-            "OwOify": "/owoify",
-            "8Ball": "/8ball",
-            "fact": "/fact",
-            "nekoGif": "/img/ngif",
-            "kemonomimi": "/img/kemonomimi",
-            "holo": "/img/holo",
-            "smug": "/img/smug",
-            "baka": "/img/baka",
-            "woof": "/img/woof",
-            "spoiler": "/spoiler",
-            "wallpaper": "/img/wallpaper",
-            "goose": "/img/goose",
-            "gecg": "/img/gecg",
-            "avatar": "/img/avatar",
-            "waifu": "/img/waifu"
-        }
-        self.NSFW = {
-            "randomHentaiGif": "/img/Random_hentai_gif",
-            "pussy": "/img/pussy",
-            "nekoGif": "/img/nsfw_neko_gif",
-            "neko": "/img/lewd",
-            "lesbian": "/img/les",
-            "kuni": "/img/kuni",
-            "cumsluts": "/img/cum",
-            "classic": "/img/classic",
-            "boobs": "/img/boobs",
-            "bJ": "/img/bj",
-            "anal": "/img/anal",
-            "avatar": "/img/nsfw_avatar",
-            "yuri": "/img/yuri",
-            "trap": "/img/trap",
-            "tits": "/img/tits",
-            "girlSoloGif": "/img/solog",
-            "girlSolo": "/img/solo",
-            "pussyWankGif": "/img/pwankg",
-            "pussyArt": "/img/pussy_jpg",
-            "kemonomimi": "/img/lewdkemo",
-            "kitsune": "/img/lewdk",
-            "keta": "/img/keta",
-            "holo": "/img/hololewd",
-            "holoEro": "/img/holoero",
-            "hentai": "/img/hentai",
-            "futanari": "/img/futanari",
-            "femdom": "/img/femdom",
-            "feetGif": "/img/feetg",
-            "eroFeet": "/img/erofeet",
-            "feet": "/img/feet",
-            "ero": "/img/ero",
-            "eroKitsune": "/img/erok",
-            "eroKemonomimi": "/img/erokemo",
-            "eroNeko": "/img/eron",
-            "eroYuri": "/img/eroyuri",
-            "cumArts": "/img/cum_jpg",
-            "blowJob": "/img/blowjob",
-            "spank": "/img/spank",
-            "gasm": "/img/gasm"
-        }
+        self.SFW = endpoints.neko_sfw
+        self.NSFW = endpoints.neko_nsfw
 
     @commands.command()
     async def neko(self, ctx, tag=None):

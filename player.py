@@ -1,5 +1,4 @@
 import asyncio
-
 import discord
 
 
@@ -13,9 +12,6 @@ class Player(object):
     async def start(self):
         while True:
             song = await self.queue.get()
-            if self._loop:
-                await self.queue.put(song)
-                print(f"add to queue {song.title}")
             self.voice_client = song.ctx.voice_client
 
             self.voice_client.stop() if self.voice_client.is_playing(
@@ -30,8 +26,11 @@ class Player(object):
             await song.ctx.send(
                 embed=embed
             )
+            self.voice_client.play(discord.FFmpegPCMAudio(source=song.source))
 
-            self.voice_client.play(song.source)
+            if self._loop:
+                await self.queue.put(song)
+
             while self.voice_client.is_playing() or self.voice_client.is_paused():
                 if self.skip:
                     self.skip = False
