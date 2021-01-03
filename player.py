@@ -15,6 +15,7 @@ class Player(object):
             song = await self.queue.get()
             if self._loop:
                 await self.queue.put(song)
+                print(f"add to queue {song.title}")
             self.voice_client = song.ctx.voice_client
 
             self.voice_client.stop() if self.voice_client.is_playing(

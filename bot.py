@@ -47,19 +47,20 @@ class MiscCog(commands.Cog):
             description=f"Deleted message with ID ...{id[-6:]}.",
             color=0xFF0017)
         await ctx.send(embed=embed)
-        
+
     @commands.command()
     async def clear(self, ctx, limit: int = 2):
         # is used to clear the texts/messages sent
         # in the discord channel.
         channel = ctx.channel
         deleted = await channel.purge(
-            limit=limit, 
+            limit=limit,
             check=lambda m: m.author.id == self.bot.user.id)
         embed = discord.Embed(
-            description=f"Deleted {deleted} message(s).",
+            description=f"Deleted {len(deleted)} message(s).",
             color=0xFF0017)
         await ctx.send(embed=embed)
+
 
 class APIAccessBase(object):
     def __init__(self):
@@ -75,6 +76,7 @@ class APIAccessBase(object):
         async with ClientSession(headers=headers) as session:
             resp = await session.get(url)
             return resp
+
 
 class WaifuPicsCog(commands.Cog, APIAccessBase):
     def __init__(self, bot) -> None:
@@ -279,19 +281,19 @@ class MusicStreamingCog(commands.Cog):
             ctx.send("Not connnected to a VC, please connect to a VC")
             raise commands.CommandError("Author not connected to VC.")
 
-    @commands.command(alias=['ps'])
+    @commands.command(aliases=['ps'])
     async def pause(self, ctx):
         await self.players[ctx.guild.id].pause(ctx)
 
-    @commands.command(alias=['r'])
+    @commands.command(aliases=['r'])
     async def resume(self, ctx):
         await self.players[ctx.guild.id].resume(ctx)
 
-    @commands.command(alias=['dis'])
+    @commands.command(aliases=['dis'])
     async def disconnect(self, ctx):
         await self.players[ctx.guild.id].disconnect(ctx)
 
-    @commands.command(alias=['n'])
+    @commands.command(aliases=['n'])
     async def next(self, ctx):
         await self.players[ctx.guild.id].next(ctx)
 
