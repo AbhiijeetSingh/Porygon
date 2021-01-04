@@ -197,19 +197,19 @@ class MusicStreamingCog(commands.Cog):
     @commands.command(aliases=['lp'])
     async def loop(self, ctx):
         await self.players[ctx.guild.id].loop_queue(ctx)
-    
+
     @commands.command(aliases=['q'])
     async def queue(self, ctx):
         await self.players[ctx.guild.id].queue_list(ctx)
-    
+
     @commands.command(aliases=['dq'])
     async def dequeue(self, ctx, *query):
         query = " ".join(query)
         info = await self.audio_repo.get_info(query)
-        title= info['entries'][0]['title']
+        title = info['entries'][0]['title']
         await self.players[ctx.guild.id].dequeue(ctx, title)
-    
-    @commands.command(aliases = ['cq'])
+
+    @commands.command(aliases=['cq'])
     async def clearq(self, ctx):
         await self.players[ctx.guild.id].clear_queue(ctx)
 
