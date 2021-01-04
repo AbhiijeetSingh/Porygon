@@ -1,6 +1,5 @@
 # To download the get the
 # song query passed.
-
 import subprocess
 import os
 from concurrent.futures import ThreadPoolExecutor
@@ -29,6 +28,15 @@ async def _download(webpage_url, filename):
         await loop.run_in_executor(pool, subprocess.run,
                                    f'youtube-dl -f bestaudio --output {os.path.join(BASE_PATH, filename)} {webpage_url}'
                                    )
+
+
+def clear_repo():
+    song_repo = os.listdir(BASE_PATH)
+    while len(song_repo) > 30:
+        song_repo = os.listdir(BASE_PATH)
+        full_path = [f"{BASE_PATH}/{x}" for x in song_repo]
+        oldest_file = min(full_path, key=os.path.getctime)
+        os.remove(oldest_file)
 
 
 class AudioRepo(object):

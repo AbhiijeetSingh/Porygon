@@ -1,7 +1,7 @@
 import discord
 from player import Player
 from discord.ext import commands
-from audio_repo import AudioRepo
+from audio_repo import AudioRepo, clear_repo
 import key
 import asyncio
 from song import Song
@@ -188,6 +188,7 @@ class MusicStreamingCog(commands.Cog):
     @commands.command(aliases=['dis'])
     async def disconnect(self, ctx):
         await self.players[ctx.guild.id].disconnect(ctx)
+        clear_repo()
 
     @commands.command(aliases=['n'])
     async def next(self, ctx):
