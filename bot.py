@@ -218,7 +218,7 @@ class MusicStreamingCog(commands.Cog):
     async def dequeue(self, ctx, *query):
         query = " ".join(query)
         info = await self.audio_repo.get_info(query)
-        title = info['entries'][0]['title']
+        title = info['title']
         await self.players[ctx.guild.id].dequeue(ctx, title)
 
     @commands.command(aliases=['cq'])

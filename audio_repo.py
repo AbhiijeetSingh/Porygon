@@ -66,8 +66,9 @@ class AudioRepo(object):
         await self.database.disconnect()
 
     async def get_info(self, query):
+        query = query.strip().lower()
         db_query = select([self.search_results]).where(
-            self.search_results.c.search_text == query.lower())
+            self.search_results.c.search_text == query)
         result = await self.database.fetch_one(query=db_query)
 
         if result:
@@ -88,7 +89,7 @@ class AudioRepo(object):
             )
             async with self.database.transaction():
                 db_query = self.search_results.insert()
-                values = dict(search_text=query.lower(), **info)
+                values = dict(search_text=query, **info)
                 await self.database.execute(query=db_query, values=values)
             return info
 
