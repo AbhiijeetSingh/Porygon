@@ -1,7 +1,7 @@
 import discord
 from player import Player
 from discord.ext import commands
-from audio_repo import AudioRepo
+from audio_repo import AudioRepo, clear_repo
 import key
 import asyncio
 from song import Song
@@ -162,7 +162,7 @@ class MusicStreamingCog(commands.Cog):
         if self.players[ctx.guild.id].get_queue_length() != 0:
             await ctx.send(embed=embed)
 
-        await self.players[ctx.guild.id].add_to_queue(song)
+        await self.players[ctx.guild.id].enqueue(song)
 
     @play.before_invoke
     async def ensure_connected_voice_client(self, ctx):
@@ -196,6 +196,7 @@ class MusicStreamingCog(commands.Cog):
     @commands.command(aliases=['dis'])
     async def disconnect(self, ctx):
         await self.players[ctx.guild.id].disconnect(ctx)
+        clear_repo()
 
     @commands.command(aliases=['n'])
     async def next(self, ctx):
@@ -204,12 +205,21 @@ class MusicStreamingCog(commands.Cog):
     @commands.command(aliases=['lp'])
     async def loop(self, ctx):
         await self.players[ctx.guild.id].loop_queue(ctx)
-    
+
     @commands.command(aliases=['q'])
     async def queue(self, ctx):
         await self.players[ctx.guild.id].queue_list(ctx)
 
-    
+    @commands.command(aliases=['dq'])
+    async def dequeue(self, ctx, *query):
+        query = " ".join(query)
+        info = await self.audio_repo.get_info(query)
+        title = info['entries'][0]['title']
+        await self.players[ctx.guild.id].dequeue(ctx, title)
+
+    @commands.command(aliases=['cq'])
+    async def clearq(self, ctx):
+        await self.players[ctx.guild.id].clear_queue(ctx)
 
 
 if __name__ == "__main__":
