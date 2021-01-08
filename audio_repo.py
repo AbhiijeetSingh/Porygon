@@ -86,9 +86,10 @@ class AudioRepo(object):
                 thumbnail=youtube_dl_info['entries'][0]['thumbnail'],
                 webpage_url=youtube_dl_info['entries'][0]['webpage_url']
             )
-            db_query = self.search_results.insert()
-            values = dict(search_text=query.lower(), **info)
-            await self.database.execute(query=db_query, values=values)
+            async with self.database.transaction():
+                db_query = self.search_results.insert()
+                values = dict(search_text=query.lower(), **info)
+                await self.database.execute(query=db_query, values=values)
             return info
 
     async def get(self, info):

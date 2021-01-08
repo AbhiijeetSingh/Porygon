@@ -139,6 +139,14 @@ class MusicStreamingCog(commands.Cog):
             self.players[guild.id] = Player(asyncio.Queue())
             asyncio.create_task(self.players[guild.id].start())
 
+    @commands.Cog.listener()
+    async def on_connect(self):
+        await self.audio_repo.init()
+
+    @commands.Cog.listener()
+    async def on_disconnect(self):
+        await self.audio_repo.clean_up()
+
     @commands.command()
     async def play(self, ctx, *query):
         query = " ".join(query)
@@ -176,10 +184,6 @@ class MusicStreamingCog(commands.Cog):
         else:
             ctx.send("Not connnected to a VC, please connect to a VC")
             raise commands.CommandError("Author not connected to VC.")
-
-    @play.before_invoke
-    async def init_repo(self, ctx):
-        await self.audio_repo.init()
 
     @play.after_invoke
     async def repo_clean_up(self, ctx):
