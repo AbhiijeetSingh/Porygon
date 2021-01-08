@@ -146,7 +146,7 @@ class MusicStreamingCog(commands.Cog):
         info = await self.audio_repo.get_info(query)
         source = await self.audio_repo.get(info)
 
-        title = info['entries'][0]['title']
+        title = info['title']
         song = Song(
             title=title,
             source=source,
@@ -157,7 +157,7 @@ class MusicStreamingCog(commands.Cog):
             title="Added to queue",
             description=title,
             color=0x00DAFF
-        ).set_thumbnail(url=info['entries'][0]['thumbnail'])
+        ).set_thumbnail(url=info['thumbnail'])
 
         if self.players[ctx.guild.id].get_queue_length() != 0:
             await ctx.send(embed=embed)
@@ -177,6 +177,14 @@ class MusicStreamingCog(commands.Cog):
             ctx.send("Not connnected to a VC, please connect to a VC")
             raise commands.CommandError("Author not connected to VC.")
 
+    @play.before_invoke
+    async def init_repo(self, ctx):
+        await self.audio_repo.init()
+
+    @play.after_invoke
+    async def repo_clean_up(self, ctx):
+        await self.audio_repo.clean_up()
+        
     @commands.command(aliases=['ps'])
     async def pause(self, ctx):
         await self.players[ctx.guild.id].pause(ctx)

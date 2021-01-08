@@ -6,7 +6,9 @@ import os
 from concurrent.futures import ThreadPoolExecutor
 import asyncio
 from youtube_dl import YoutubeDL
-
+from databases import Database
+from sqlalchemy import Table, Column, MetaData, String
+from sqlalchemy.sql import select
 
 BASE_PATH = "PorygonSongs"
 
@@ -37,15 +39,54 @@ class AudioRepo(object):
             os.makedirs(BASE_PATH)
         except FileExistsError:
             pass
+        self.database = Database(f"sqlite:///{BASE_PATH}/audios.db")
+        self.metadata = MetaData()
+        self.search_results = Table(
+            "search_results",
+            self.metadata,
+            Column("id", String),
+            Column("search_text", String),
+            Column("title", String),
+            Column("thumbnail", String),
+            Column("webpage_url", String)
+        )
+
+    async def init(self):
+        await self.database.connect()
+
+    async def clean_up(self):
+        await self.database.disconnect()
 
     async def get_info(self, query):
-        info = await extract_info_from_yt(query)
-        return info
+        db_query = select([self.search_results]).where(
+            self.search_results.c.search_text == query.lower())
+        result = await self.database.fetch_one(query=db_query)
+
+        if result:
+            info = dict(
+                id=result.id,
+                title=result.title,
+                thumbnail=result.thumbnail,
+                webpage_url=result.webpage_url
+            )
+            return info
+        else:
+            youtube_dl_info = await extract_info_from_yt(query)
+            info = dict(
+                id=youtube_dl_info['entries'][0]['id'],
+                title=youtube_dl_info['entries'][0]['title'],
+                thumbnail=youtube_dl_info['entries'][0]['thumbnail'],
+                webpage_url=youtube_dl_info['entries'][0]['webpage_url']
+            )
+            db_query = self.search_results.insert()
+            values = dict(search_text=query.lower(), **info)
+            await self.database.execute(query=db_query, values=values)
+            return info
 
     async def get(self, info):
-        id = info['entries'][0]['id']
+        id = info['id']
         if is_cached(id):
             pass
         else:
-            await _download(info['entries'][0]['webpage_url'], info['entries'][0]['id'])
+            await _download(info['webpage_url'], info['id'])
         return os.path.join(BASE_PATH, id)
