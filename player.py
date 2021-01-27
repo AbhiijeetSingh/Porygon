@@ -27,6 +27,7 @@ class Player(object):
             await song.ctx.send(
                 embed=embed
             )
+
             self.voice_client.play(discord.FFmpegPCMAudio(source=song.source))
 
             while self.voice_client.is_playing() or self.voice_client.is_paused():
@@ -126,3 +127,21 @@ class Player(object):
             color=0xFF0017
         )
         await ctx.send(embed=embed)
+
+    async def skipto(self, ctx, title):
+        songs = asyncio.Queue()
+
+        for _ in range(self.queue.qsize()):
+            song = await self.queue.get()
+            if song.title == title:
+                await self.queue.put(song)
+            else:
+                await songs.put(song)
+
+        for __ in range(songs.qsize()):
+            item = await songs.get()
+            await self.queue.put(item)
+
+        self.skip=True
+
+        await ctx.message.add_reaction("\U0001F44D")

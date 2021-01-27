@@ -188,7 +188,7 @@ class MusicStreamingCog(commands.Cog):
     @play.after_invoke
     async def repo_clean_up(self, ctx):
         await self.audio_repo.clean_up()
-        
+
     @commands.command(aliases=['ps'])
     async def pause(self, ctx):
         await self.players[ctx.guild.id].pause(ctx)
@@ -224,6 +224,13 @@ class MusicStreamingCog(commands.Cog):
     @commands.command(aliases=['cq'])
     async def clearq(self, ctx):
         await self.players[ctx.guild.id].clear_queue(ctx)
+
+    @commands.command(aliases=["skip"])
+    async def skipto(self, ctx, *query):
+        query = " ".join(query)
+        info = await self.audio_repo.get_info(query)
+        title = info['title']
+        await self.players[ctx.guild.id].skipto(ctx, title)
 
 
 if __name__ == "__main__":
